@@ -23,8 +23,17 @@ function environment() {
   apt update >>/tmp/install.log 2>&1
   check $?
   echo -n 'apt install compiling environment...'
-  apt install -y --no-install-recommends xz-utils wget ca-certificates g++ gcc make pkg-config cron >>/tmp/install.log 2>&1
+  apt install -y --no-install-recommends xz-utils wget ca-certificates g++ gcc make pkg-config >>/tmp/install.log 2>&1
   check $?
+  if [ ! -f /etc/vim/vimrc.local ]; then
+    {
+      echo 'source $VIMRUNTIME/defaults.vim'
+      echo 'let skip_defaults_vim = 1'
+      echo 'if has('mouse')'
+      echo '  set mouse=r'
+      echo 'endif'
+    } >/etc/vim/vimrc.local
+  fi
   echo 'Compiling environment finished'
 }
 
@@ -231,22 +240,20 @@ function mysql() {
   check $?
   echo -n 'MySQL config ...'
   mv mysql-$MYSQL_VERSION-linux-glibc2.17-x86_64-minimal /usr/local/mysql &&
-    mkdir /usr/local/mysql/etc
-  check $?
-  echo -n 'MySQL /usr/local/mysql/etc/my.cnf write ...'
-  cat >/usr/local/mysql/etc/my.cnf <<EOF
-[mysqld]
-datadir = /Web/MySQL
-log_error = /Web/Logs/mysq_error.log
-long_query_time = 1
-slow_query_log = 1
-slow_query_log_file = /Web/Logs/mysq_slow.log
-default_authentication_plugin = mysql_native_password
-binlog_cache_size = 64M
-max_connections = 1024
-[client]
-protocol=tcp
-EOF
+    mkdir /usr/local/mysql/etc &&
+    {
+      echo '[mysqld]'
+      echo 'datadir = /Web/MySQL'
+      echo 'log_error = /Web/Logs/mysq_error.log'
+      echo 'long_query_time = 1'
+      echo 'slow_query_log = 1'
+      echo 'slow_query_log_file = /Web/Logs/mysq_slow.log'
+      echo 'default_authentication_plugin = mysql_native_password'
+      echo 'binlog_cache_size = 64M'
+      echo 'max_connections = 1024'
+      echo '[client]'
+      echo 'protocol=tcp'
+    } >/usr/local/mysql/etc/my.cnf
   check $?
 
   rm -rf mysql-$MYSQL_VERSION-linux-glibc2.17-x86_64-minimal.tar.xz
