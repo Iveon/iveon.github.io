@@ -63,7 +63,7 @@ function nginx() {
   tar zxf nginx-$NGINX_VERSION.tar.gz
   check $?
 
-  cd nginx-$NGINX_VERSION || echo "nginx-$NGINX_VERSION Directory does not exist" && exit 1
+  cd nginx-$NGINX_VERSION || (echo "nginx-$NGINX_VERSION Directory does not exist" && exit 1)
   echo -n 'Nginx configure ...'
   ./configure \
     --user=www \
@@ -140,7 +140,7 @@ function php() {
   tar xf php-$PHP_VERSION.tar.xz
   check $?
 
-  cd php-$PHP_VERSION || echo "php-$PHP_VERSION Directory does not exist" && exit 1
+  cd php-$PHP_VERSION || (echo "php-$PHP_VERSION Directory does not exist" && exit 1)
   echo -n 'PHP configure ...'
   ./configure --silent \
     --prefix=/usr/local/php \
@@ -281,11 +281,12 @@ function redis() {
     wget -q --no-clobber -O ./redis-$REDIS_VERSION.tar.gz https://download.redis.io/releases/redis-$REDIS_VERSION.tar.gz
     if [ $? -eq 0 ]; then echo 'successfully'; else echo 'failed' && exit 1; fi
   fi
+
   echo -n 'Redis uncompressing ...'
   tar zxf redis-$REDIS_VERSION.tar.gz
   check $?
 
-  cd redis-$REDIS_VERSION || echo "redis-$REDIS_VERSION Directory does not exist" && exit 1
+  cd redis-$REDIS_VERSION || (echo "redis-$REDIS_VERSION Directory does not exist" && exit 1)
   echo -n 'Redis make install ...'
   make PREFIX=/usr/local/redis install >>/tmp/install.log 2>&1
   check $?
@@ -298,7 +299,7 @@ function redis() {
     sed -i 's|^# save 300 100$|save 300 100|' /Web/Redis/redis.conf &&
     sed -i 's|^# save 60 10000$|save 60 10000|' /Web/Redis/redis.conf &&
     sed -i 's|^dir ./$|dir "/Web/Redis"|' /Web/Redis/redis.conf &&
-    chmod -R redis:redis /Web/Redis
+    chown -R redis:redis /Web/Redis
   check $?
 
   cd ..
